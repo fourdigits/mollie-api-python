@@ -1,11 +1,11 @@
 from ..resources.order_refunds import OrderRefunds
+from ..resources.shipments import Shipments
 from .base import Base
 from .list import List
 from .order_line import OrderLine
 
 
 class Order(Base):
-
     STATUS_CREATED = 'created'
     STATUS_PAID = 'paid'
     STATUS_AUTHORIZED = 'authorized'
@@ -14,6 +14,10 @@ class Order(Base):
     STATUS_SHIPPING = 'shipping'
     STATUS_COMPLETED = 'completed'
     STATUS_EXPIRED = 'expired'
+
+    @property
+    def resource(self):
+        return self._get_property('resource')
 
     @property
     def id(self):
@@ -162,3 +166,22 @@ class Order(Base):
             'count': len(lines),
         }
         return List(result, OrderLine, client=self.client)
+
+    @property
+    def shipments(self):
+        """Retrieve all shipments for an order."""
+        return Shipments(self.client).on(self).list()
+
+    def create_shipment(self, data=None):
+        """Create a shipment for an order."""
+        if data is None:
+            data = {'lines': []}
+        return Shipments(self.client).on(self).create(data)
+
+    def get_shipment(self, resource_id):
+        """Retrieve a single shipment by a shipment's ID."""
+        return Shipments(self.client).on(self).get(resource_id)
+
+    def update_shipment(self, resource_id, data):
+        """Update the tracking information of a shipment."""
+        return Shipments(self.client).on(self).update(resource_id, data)
