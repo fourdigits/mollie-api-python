@@ -25,7 +25,7 @@ class Base(dict):
         """Return a link by its name."""
         try:
             return self['_links'][name]['href']
-        except KeyError:
+        except (KeyError, TypeError):
             return None
 
     @classmethod
