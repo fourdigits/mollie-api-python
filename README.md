@@ -106,7 +106,7 @@ if payment.is_paid():
 Or retrieve a collection of payments.
 
 ```python
-payments = mollie_client.payments.all()
+payments = mollie_client.payments.list()
 ```
 
 For an extensive example of listing payments with the details and status, see [Example 5 - Payments History](https://github.com/mollie/mollie-api-python/blob/master/examples/05-payments-history.py).
@@ -171,7 +171,7 @@ definitive. Refunds are only supported for iDEAL, credit card, Bancontact, SOFOR
 ING Home'Pay and bank transfer payments. Other types of payments cannot be refunded through our API at the moment.
 
 ```python
-payment = mollie_client.payment.get(payment.id)
+payment = mollie_client.payments.get(payment.id)
 
 # Refund € 2 of this payment
 refund = mollie_client.refunds.on(payment).create({
@@ -183,6 +183,93 @@ refund = mollie_client.refunds.on(payment).create({
 ```
 
 For a working example, see [Example 11 - Refund payment](https://github.com/mollie/mollie-api-python/blob/master/examples/11-refund-payment.py).
+
+### Creating an order ###
+
+Using the Orders API is the preferred approach when integrating the Mollie API into e-commerce applications such as webshops. 
+If you want to use pay after delivery methods such as Klarna Pay later, using the Orders API is mandatory.
+
+Creating an order will automatically create the required payment to allow your customer to pay for the order.
+
+Once you have created an order, you should redirect your customer to the URL in the `checkout_url` property from the response.
+
+Create an order with a 100 euro discount:
+```python
+order =  mollie_client.orders.create(
+    {
+    'amount': {
+        'value': '299.00',
+        'currency': 'EUR'
+    },
+    'billingAddress': {
+        'streetAndNumber': 'Keizersgracht 313',
+        'city': 'Amsterdam'
+    },
+    'shippingAddress': {
+        'streetAndNumber': 'Prinsengracht 313',
+        'city': 'Haarlem'
+    },
+    'metadata': {
+        'order_id': '1337',
+        'description': 'Lego cars'
+    },
+    'consumerDateOfBirth': '1958-01-31',
+    'locale': 'nl_NL',
+    'orderNumber': '1337',
+    'redirectUrl': 'https://example.org/redirect',
+    'webhookUrl': 'https://example.org/webhook',
+    'method': 'ideal',
+    'lines': [
+        {
+            'type': 'physical',
+            'sku': '5702016116977',
+            'name': 'LEGO 42083 Bugatti Chiron',
+            'productUrl': 'https://shop.lego.com/nl-NL/Bugatti-Chiron-42083',
+            'imageUrl': 'https://sh-s7-live-s.legocdn.com/is/image//LEGO/42083_alt1?$main$',
+            'quantity': 1,
+            'vatRate': '21.00',
+            'unitPrice': {
+                'currency': 'EUR',
+                'value': '399.00'
+            },
+            'totalAmount': {
+                'currency': 'EUR',
+                'value': '299.00'
+            },
+            'discountAmount': {
+                'currency': 'EUR',
+                'value': '100.00'
+            },
+            'vatAmount': {
+                'currency': 'EUR',
+                'value': '51.89'
+            }
+        },
+
+    ]
+})
+```
+
+## Retrieving orders
+
+We can use the `order.id` to retrieve an order and check uf the order `isPaid`
+
+```python
+order = mollie_client.orders.get(order.id)
+
+if order.is_paid():
+    print('Payment received')
+```
+
+Or retrieve a collection of orders.
+
+```python
+orders = mollie_client.orders.list()
+```
+
+For an extensive examples of listing orders with details or how to cancel an order, see [Example 15 - List Orders](https://github.com/mollie/mollie-api-python/blob/master/examples/15-list-orders.py).
+
+
 
 ## API documentation ##
 If you wish to learn more about our API, please visit the [Mollie Developer Portal](https://www.mollie.com/en/developers). API Documentation is available in English.
